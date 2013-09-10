@@ -11,12 +11,12 @@
 
 # Path to ZFS executable:
 ZFS=/usr/sbin/zfs
- 
+
 # Parse arguments:
 TARGET=$1
 SNAP=$2
 COUNT=$3
- 
+
 # Function to display usage:
 usage() {
     scriptname=`/usr/bin/basename $0`
@@ -33,36 +33,36 @@ usage() {
     echo
     exit
 }
- 
+
 # Basic argument checks:
 if [ -z $COUNT ] ; then
     usage
 fi
- 
+
 if [ ! -z $4 ] ; then
     usage
 fi
- 
+
 # Snapshots are number starting at 0; $max_snap is the highest numbered
 # snapshot that will be kept.
 max_snap=$(($COUNT -1))
- 
+
 # Clean up oldest snapshot:
 $ZFS list -t snapshot | grep -q ^${TARGET}@${SNAP}\.${max_snap}
 if [ $? -eq 0 ] ; then
     $ZFS destroy -r ${TARGET}@${SNAP}.${max_snap}
 fi
- 
+
 # Rename existing snapshots:
 dest=$max_snap
 while [ $dest -gt 0 ] ; do
     src=$(($dest - 1))
     $ZFS list -t snapshot | grep -q ^${TARGET}@${SNAP}\.${src}
     if [ $? -eq 0 ] ; then
-    $ZFS rename -r ${TARGET}@${SNAP}.${src} ${TARGET}@${SNAP}.${dest}
+        $ZFS rename -r ${TARGET}@${SNAP}.${src} ${TARGET}@${SNAP}.${dest}
     fi
     dest=$(($dest - 1))
 done
- 
+
 # Create new snapshot:
 $ZFS snapshot -r ${TARGET}@${SNAP}.0
